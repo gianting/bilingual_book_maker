@@ -82,20 +82,49 @@ root = tk.Tk()
 topmost_var = tk.BooleanVar(value=True)
 root.attributes("-topmost", True)
 root.title("字幕/電子書 翻譯小工具")
-root.geometry("650x350")
+root.geometry("800x450")
 root.configure(bg="#f7f7f7")
+
+style = ttk.Style()
+style.configure("TButton", padding=6, relief="flat", background="#4CAF50", foreground="black", font=("Helvetica", 12, "bold"))
+style.configure("TEntry", padding=5)
+style.configure("TLabel", background="#f7f7f7", font=("Helvetica", 12))
+style.configure("TCombobox", padding=4)
+style.configure("TCheckbutton", background="#f7f7f7", font=("Helvetica", 12))
+style.configure("TProgressbar", thickness=18)
+# 美化 Start 按鈕
+style.configure("Start.TButton", 
+    font=("Helvetica", 18, "bold"),
+    padding=(20, 14),  # 左右20px，上下14px
+    background="#4CAF50",
+    foreground="black",
+    borderwidth=0,
+    focusthickness=0,
+    focuscolor="none",
+    relief="flat",
+    anchor="center"  # 文字置中
+)
+style.map("Start.TButton",
+    background=[("active", "#45a049"), ("pressed", "#39843c")],
+    foreground=[("disabled", "gray")]
+)
+style.layout("Start.TButton", [
+    ("Button.padding", {"children": [("Button.label", {"side": "top", "expand": 1})]}),
+])
+
 default_font = ("Helvetica", 12)
 
 main_frame = tk.Frame(root, bg="#f7f7f7", padx=15, pady=15)
 main_frame.grid(row=0, column=0, sticky="nsew")
 
 tk.Label(main_frame, text="選擇檔案：", font=default_font, bg="#f7f7f7").grid(row=0, column=0, sticky="e", pady=6)
-entry_file = tk.Entry(main_frame, width=50, font=default_font)
+entry_file = ttk.Entry(main_frame, width=50)
 entry_file.grid(row=0, column=1, pady=6, padx=(0,10))
-tk.Button(main_frame, text="選擇檔案", command=select_file, font=default_font).grid(row=0, column=2, pady=6)
+select_file_button = ttk.Button(main_frame, text="選擇檔案", command=select_file, style="TButton")
+select_file_button.grid(row=0, column=2, pady=6, padx=(0,10), sticky="ew")
 
 tk.Label(main_frame, text="API金鑰：", font=default_font, bg="#f7f7f7").grid(row=1, column=0, sticky="e", pady=6)
-entry_key = tk.Entry(main_frame, width=50, font=default_font)
+entry_key = ttk.Entry(main_frame, width=50)
 entry_key.grid(row=1, column=1, columnspan=2, pady=6, padx=(0,10))
 
 # 從環境變數載入 API 金鑰
@@ -103,13 +132,13 @@ default_api_key = os.environ.get("OPENAI_API_KEY", "")
 if default_api_key:
     entry_key.insert(0, default_api_key)
 
-tk.Label(main_frame, text="目標語言（如zh-hant）：", font=default_font, bg="#f7f7f7").grid(row=2, column=0, sticky="e", pady=6)
-entry_language = ttk.Combobox(main_frame, width=47, values=["en", "zh-hans", "zh-hant", "ja", "ko", "fr", "de", "es"], font=default_font)
+tk.Label(main_frame, text="目標語言", font=default_font, bg="#f7f7f7").grid(row=2, column=0, sticky="e", pady=6)
+entry_language = ttk.Combobox(main_frame, width=60, values=["en", "zh-hans", "zh-hant", "ja", "ko", "fr", "de", "es"])
 entry_language.grid(row=2, column=1, columnspan=2, pady=6, padx=(0,10))
 entry_language.set("zh-hant")
 
-tk.Label(main_frame, text="使用模型（如gpt4o）：", font=default_font, bg="#f7f7f7").grid(row=3, column=0, sticky="e", pady=6)
-entry_model = ttk.Combobox(main_frame, width=47, values=["gpt-3.5-turbo", "gpt-4", "gpt4o", "claude-3-5-sonnet-latest", "geminipro", "groq"], font=default_font)
+tk.Label(main_frame, text="使用模型", font=default_font, bg="#f7f7f7").grid(row=3, column=0, sticky="e", pady=6)
+entry_model = ttk.Combobox(main_frame, width=60, values=["gpt-3.5-turbo", "gpt-4", "gpt4o", "claude-3-5-sonnet-latest", "geminipro", "groq"])
 entry_model.grid(row=3, column=1, columnspan=2, pady=6, padx=(0,10))
 entry_model.set("gpt4o")
 
@@ -126,10 +155,9 @@ if settings:
     topmost_var.set(settings.get("topmost", True))
     root.attributes("-topmost", topmost_var.get())
 
-start_button = tk.Button(main_frame, text="開始翻譯", command=start_translation,
-                         bg="#4CAF50", fg="black", activeforeground="black", activebackground="#45A049",
-                         font=("Helvetica", 14, "bold"), height=2, relief="raised")
-start_button.grid(row=4, column=1, pady=15, sticky="ew", columnspan=1)
+start_button = ttk.Button(main_frame, text=" 🚀 開始翻譯 ", command=start_translation)
+start_button.grid(row=4, column=0, columnspan=3, pady=20, sticky="ew")
+start_button.configure(style="Start.TButton")
 
 progress_bar = ttk.Progressbar(main_frame, mode='determinate', maximum=100)
 progress_bar.grid(row=5, column=0, columnspan=3, sticky="ew", pady=(5,2), padx=(0,10))
@@ -137,8 +165,8 @@ progress_bar.grid(row=5, column=0, columnspan=3, sticky="ew", pady=(5,2), padx=(
 progress_label = tk.Label(main_frame, text="進度：0%", font=("Helvetica", 10), bg="#f7f7f7")
 progress_label.grid(row=6, column=0, columnspan=3, pady=(0,10))
 
-topmost_checkbox = tk.Checkbutton(main_frame, text="視窗置頂", variable=topmost_var, bg="#f7f7f7", font=default_font, command=lambda: root.attributes("-topmost", topmost_var.get()))
-topmost_checkbox.grid(row=7, column=0, columnspan=3, pady=(5, 10))
+topmost_checkbox = ttk.Checkbutton(main_frame, text="視窗置頂", variable=topmost_var, command=lambda: root.attributes("-topmost", topmost_var.get()))
+topmost_checkbox.grid(row=7, column=0, columnspan=3, pady=(10, 15))
 
 # 關閉視窗時儲存部分設定
 def on_closing():
