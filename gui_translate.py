@@ -29,6 +29,8 @@ def select_file():
     entry_file.insert(0, file_path)
 
 def start_translation():
+    progress_bar['value'] = 0
+    root.update_idletasks()
     file_path = entry_file.get()
     api_key = entry_key.get()
     language = entry_language.get()
@@ -36,6 +38,8 @@ def start_translation():
 
     if not file_path or not api_key or not language or not model:
         messagebox.showwarning("缺少欄位", "請填寫所有欄位！")
+        progress_bar['value'] = 0
+        root.update_idletasks()
         return
 
     command = [
@@ -47,7 +51,14 @@ def start_translation():
     ]
 
     try:
+        # 模擬進度條增長（僅為視覺效果，非實際進度）
+        for pct in range(0, 81, 20):
+            progress_bar['value'] = pct
+            root.update_idletasks()
+            root.after(100)
         subprocess.run(command, check=True)
+        progress_bar['value'] = 100
+        root.update_idletasks()
         settings = {
             "file_path": file_path,
             "api_key": api_key,
@@ -57,6 +68,8 @@ def start_translation():
         save_settings(settings)
         messagebox.showinfo("完成", "翻譯完成！")
     except Exception as e:
+        progress_bar['value'] = 0
+        root.update_idletasks()
         messagebox.showerror("錯誤", f"翻譯時出錯了：\n{e}")
 
 # 建立 GUI 視窗
@@ -100,6 +113,9 @@ if settings:
 
 
 tk.Button(root, text="開始翻譯", command=start_translation).grid(row=4, column=1, pady=10)
+
+progress_bar = ttk.Progressbar(root, mode='determinate', maximum=100)
+progress_bar.grid(row=5, column=0, columnspan=3, sticky="ew", pady=5)
 
 # 關閉視窗時儲存部分設定
 def on_closing():
